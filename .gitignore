@@ -1,0 +1,6 @@
+.env
+.env.local
+.env.*.local
+google-credentials.json
+*.key
+*.pem
