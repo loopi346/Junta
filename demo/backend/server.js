@@ -11,7 +11,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const upload = multer({ storage: multer.memoryStorage() });
+// === CONFIGURACIÓN PARA RENDER ===
+// Render monta los secret files en /etc/secrets/
+// Aquí obligamos al SDK a usar ese archivo para autenticarse
+process.env.GOOGLE_APPLICATION_CREDENTIALS = "/etc/secrets/gen-lang-client-0775635895-8e47a6e92ef4.json";
 
 // OCR - Google Vision
 const visionClient = new vision.ImageAnnotatorClient();
@@ -20,6 +23,10 @@ const visionClient = new vision.ImageAnnotatorClient();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
+// Multer para recibir archivos en memoria
+const upload = multer({ storage: multer.memoryStorage() });
+
+// Función OCR
 async function ejecutarOCR(buffer) {
   const [resultado] = await visionClient.textDetection(buffer);
   const texto = resultado.fullTextAnnotation?.text || "Sin texto detectado";
@@ -45,6 +52,7 @@ app.post(
         manejaMonedaExtranjera,
       } = req.body;
 
+      // Validación base
       const camposFaltantes = [];
       if (!nombreCompleto) camposFaltantes.push("nombreCompleto");
       if (!tipoIdentificacion) camposFaltantes.push("tipoIdentificacion");
@@ -66,6 +74,7 @@ app.post(
         });
       }
 
+      // OCR real
       const rutBuffer = req.files.rut?.[0].buffer;
       const cedulaBuffer = req.files.cedula?.[0].buffer;
       const extractosBuffer = req.files.extractos?.[0].buffer;
@@ -74,23 +83,19 @@ app.post(
       const ocrCedula = cedulaBuffer ? await ejecutarOCR(cedulaBuffer) : "No cargado";
       const ocrExtractos = extractosBuffer ? await ejecutarOCR(extractosBuffer) : "No cargado";
 
+      // Recomendaciones inmediatas (backend)
       const recomendacionesBackend = [];
       if (!ocrRut || ocrRut.trim().length < 20) {
-        recomendacionesBackend.push(
-          "Por favor vuelva a subir el RUT. No se detecto informacion legible."
-        );
+        recomendacionesBackend.push("Por favor vuelva a subir el RUT. No se detectó información legible.");
       }
       if (!ocrCedula || ocrCedula.trim().length < 20) {
-        recomendacionesBackend.push(
-          "La cedula no se pudo leer correctamente. Suba una foto mas clara."
-        );
+        recomendacionesBackend.push("La cédula no se pudo leer correctamente. Suba una imagen más clara.");
       }
       if (!ocrExtractos || ocrExtractos.trim().length < 20) {
-        recomendacionesBackend.push(
-          "El extracto bancario no es correcto. Asegurese de subir un archivo legible."
-        );
+        recomendacionesBackend.push("El extracto bancario no es correcto. Asegúrese de subir un archivo legible.");
       }
 
+      // Prompt IA
       const prompt = `
 Eres un analista experto en onboarding bancario.
 Evalua coherencia entre lo declarado y lo detectado por OCR.
@@ -115,7 +120,7 @@ ${ocrCedula}
 --- EXTRACTOS ---
 ${ocrExtractos}
 
-Genera JSON final (solo JSON, nada mas), con esta estructura:
+Genera JSON con esta estructura:
 {
  "coherencia": "",
  "riesgo": "",
@@ -123,11 +128,6 @@ Genera JSON final (solo JSON, nada mas), con esta estructura:
  "inconsistenciasDetectadas": [],
  "recomendaciones": []
 }
-
-Las recomendaciones deben ser accionables, por ejemplo:
-- "Suba nuevamente el extracto, el archivo no se pudo leer."
-- "El numero de identificacion no coincide, revise el documento cargado."
-- "El RUT no contiene informacion suficiente, suba una version legible."
 `;
 
       const result = await model.generateContent(prompt);
@@ -150,7 +150,7 @@ Las recomendaciones deben ser accionables, por ejemplo:
 
       return res.json({
         estado: "Solicitud analizada",
-        mensaje: "Validacion completada por IA con OCR real.",
+        mensaje: "Validación completada por IA con OCR real.",
         recomendacionesBackend,
         ocr: {
           rut: ocrRut.substring(0, 500),
@@ -159,13 +159,16 @@ Las recomendaciones deben ser accionables, por ejemplo:
         },
         analisis,
       });
+
     } catch (error) {
-      console.error(error);
+      console.error("❌ ERROR EN SERVIDOR:", error);
       res.status(500).json({ error: "Error en servidor" });
     }
   }
 );
 
-app.listen(3001, () =>
-  console.log("🚀 Backend OCR + Gemini ejecutandose en puerto 3001")
+// === PUERTO PARA RENDER ===
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () =>
+  console.log(`🚀 Backend OCR + Gemini ejecutándose en puerto ${PORT}`)
 );
