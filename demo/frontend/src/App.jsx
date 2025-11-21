@@ -7,8 +7,8 @@ function App() {
   const [loadingStep, setLoadingStep] = useState(0);
   const [darkMode, setDarkMode] = useState(false);
   const [errors, setErrors] = useState({});
-  const [pep, setPep] = useState(false);
-  const [monedaExtranjera, setMonedaExtranjera] = useState(false);
+  const [pep, setPep] = useState("");
+  const [monedaExtranjera, setMonedaExtranjera] = useState("");
 
   const pasos = [
     "📄 Cargando documentos…",
@@ -27,6 +27,8 @@ function App() {
     if (!data.get("numeroIdentificacion")) errs.numeroIdentificacion = "Numero requerido.";
     if (!data.get("actividadEconomica")) errs.actividadEconomica = "Ingrese actividad.";
     if (!data.get("ingresosMensuales")) errs.ingresosMensuales = "Ingrese ingresos.";
+    if (!data.get("esPEP")) errs.esPEP = "Selecciona si eres PEP.";
+    if (!data.get("manejaMonedaExtranjera")) errs.manejaMonedaExtranjera = "Selecciona si manejas moneda extranjera.";
     return errs;
   };
 
@@ -46,8 +48,8 @@ function App() {
   const enviar = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    formData.set("esPEP", pep ? "true" : "false");
-    formData.set("manejaMonedaExtranjera", monedaExtranjera ? "true" : "false");
+    formData.set("esPEP", pep);
+    formData.set("manejaMonedaExtranjera", monedaExtranjera);
     const errs = validarFormulario(formData);
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
@@ -184,26 +186,31 @@ function App() {
           <input type="number" name="ingresosMensuales" />
           {errors.ingresosMensuales && <p className="error">{errors.ingresosMensuales}</p>}
 
-          <div className="checkbox-row">
-            <label className="checkbox-item">
-              <input
-                type="checkbox"
-                name="esPEP"
-                checked={pep}
-                onChange={(event) => setPep(event.target.checked)}
-              />
-              ¿Es PEP?
-            </label>
-            <label className="checkbox-item">
-              <input
-                type="checkbox"
-                name="manejaMonedaExtranjera"
-                checked={monedaExtranjera}
-                onChange={(event) => setMonedaExtranjera(event.target.checked)}
-              />
-              ¿Maneja moneda extranjera?
-            </label>
-          </div>
+          <label>¿Eres Persona Expuesta Políticamente (PEP)?</label>
+          <select
+            name="esPEP"
+            value={pep}
+            onChange={(event) => setPep(event.target.value)}
+          >
+            <option value="">Seleccione</option>
+            <option value="true">Sí</option>
+            <option value="false">No</option>
+          </select>
+          {errors.esPEP && <p className="error">{errors.esPEP}</p>}
+
+          <label>¿Manejas moneda extranjera?</label>
+          <select
+            name="manejaMonedaExtranjera"
+            value={monedaExtranjera}
+            onChange={(event) => setMonedaExtranjera(event.target.value)}
+          >
+            <option value="">Seleccione</option>
+            <option value="true">Sí</option>
+            <option value="false">No</option>
+          </select>
+          {errors.manejaMonedaExtranjera && (
+            <p className="error">{errors.manejaMonedaExtranjera}</p>
+          )}
 
           <label>RUT</label>
           <input type="file" name="rut" />
