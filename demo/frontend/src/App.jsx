@@ -69,6 +69,20 @@ function App() {
     return "badge-green";
   };
 
+  const renderListValue = (value) => {
+    if (value == null) return "";
+    if (typeof value === "string") return value;
+    if (Array.isArray(value)) {
+      return value.map((item) => renderListValue(item)).join(" | ");
+    }
+    if (typeof value === "object") {
+      return Object.entries(value)
+        .map(([key, val]) => `${key}: ${val}`)
+        .join(" | ");
+    }
+    return String(value);
+  };
+
   return (
     <div className={darkMode ? "dark page" : "page"}>
       <header className="header">
@@ -182,16 +196,16 @@ function App() {
             </div>
           )}
 
-          {resultado.analisis?.inconsistenciasDetectadas?.length > 0 && (
-            <div className="inconsistencias-box">
-              <h3>❗ Inconsistencias Detectadas</h3>
-              <ul>
-                {resultado.analisis.inconsistenciasDetectadas.map((i, idx) => (
-                  <li key={`inc-${idx}`}>{i}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+              {resultado.analisis?.inconsistenciasDetectadas?.length > 0 && (
+                <div className="inconsistencias-box">
+                  <h3>❗ Inconsistencias Detectadas</h3>
+                  <ul>
+                    {resultado.analisis.inconsistenciasDetectadas.map((item, idx) => (
+                      <li key={`inc-${idx}`}>{renderListValue(item)}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
           <details className="ocr-box">
             <summary>📄 Ver texto OCR detectado</summary>
