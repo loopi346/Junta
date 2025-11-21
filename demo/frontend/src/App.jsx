@@ -7,6 +7,8 @@ function App() {
   const [loadingStep, setLoadingStep] = useState(0);
   const [darkMode, setDarkMode] = useState(false);
   const [errors, setErrors] = useState({});
+  const [pep, setPep] = useState(false);
+  const [monedaExtranjera, setMonedaExtranjera] = useState(false);
 
   const pasos = [
     "📄 Cargando documentos…",
@@ -44,6 +46,8 @@ function App() {
   const enviar = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+    formData.set("esPEP", pep ? "true" : "false");
+    formData.set("manejaMonedaExtranjera", monedaExtranjera ? "true" : "false");
     const errs = validarFormulario(formData);
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
@@ -81,6 +85,60 @@ function App() {
         .join(" | ");
     }
     return String(value);
+  };
+
+  const generarMensajesUsuario = (resultadoActual) => {
+    const mensajes = [];
+
+    if (
+      resultadoActual.recomendacionesBackend?.some((r) =>
+        r.toLowerCase().includes("rut")
+      )
+    ) {
+      mensajes.push(
+        "📄 No pudimos leer tu RUT. Por favor subelo nuevamente con buena resolucion."
+      );
+    }
+
+    if (
+      resultadoActual.recomendacionesBackend?.some((r) =>
+        r.toLowerCase().includes("cedula")
+      )
+    ) {
+      mensajes.push("🪪 Tu documento de identidad no es legible. Sube una foto mas clara.");
+    }
+
+    if (
+      resultadoActual.recomendacionesBackend?.some((r) =>
+        r.toLowerCase().includes("extracto")
+      )
+    ) {
+      mensajes.push(
+        "🧾 Tus extractos no se pudieron validar. Sube un archivo donde se vean bien los datos."
+      );
+    }
+
+    if (
+      resultadoActual.analisis?.inconsistenciasDetectadas?.some((i) =>
+        renderListValue(i).toLowerCase().includes("pep")
+      )
+    ) {
+      mensajes.push("❓ Debes indicar si eres o no una Persona Expuesta Politicamente (PEP).");
+    }
+
+    if (
+      resultadoActual.analisis?.inconsistenciasDetectadas?.some((i) =>
+        renderListValue(i).toLowerCase().includes("moneda")
+      )
+    ) {
+      mensajes.push("💱 Falta seleccionar si manejas o no moneda extrajera.");
+    }
+
+    if (mensajes.length === 0) {
+      mensajes.push("🎉 Todo esta correcto. Puedes continuar con tu proceso.");
+    }
+
+    return mensajes;
   };
 
   return (
@@ -126,6 +184,27 @@ function App() {
           <input type="number" name="ingresosMensuales" />
           {errors.ingresosMensuales && <p className="error">{errors.ingresosMensuales}</p>}
 
+          <div className="checkbox-row">
+            <label className="checkbox-item">
+              <input
+                type="checkbox"
+                name="esPEP"
+                checked={pep}
+                onChange={(event) => setPep(event.target.checked)}
+              />
+              ¿Es PEP?
+            </label>
+            <label className="checkbox-item">
+              <input
+                type="checkbox"
+                name="manejaMonedaExtranjera"
+                checked={monedaExtranjera}
+                onChange={(event) => setMonedaExtranjera(event.target.checked)}
+              />
+              ¿Maneja moneda extranjera?
+            </label>
+          </div>
+
           <label>RUT</label>
           <input type="file" name="rut" />
 
@@ -151,6 +230,17 @@ function App() {
             ))}
           </div>
           <div className="spinner"></div>
+        </div>
+      )}
+
+      {resultado && (
+        <div className="cliente-panel animate-card">
+          <h2>Estado de tu Solicitud</h2>
+          <ul className="cliente-lista">
+            {generarMensajesUsuario(resultado).map((mensaje, index) => (
+              <li key={`mensaje-${index}`}>{mensaje}</li>
+            ))}
+          </ul>
         </div>
       )}
 
