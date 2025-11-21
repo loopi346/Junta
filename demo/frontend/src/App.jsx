@@ -52,7 +52,7 @@ function App() {
     setLoading(true);
     simularPasos();
 
-    const res = await fetch("http://localhost:3001/validar", {
+    const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/validar", {
       method: "POST",
       body: formData,
     });
