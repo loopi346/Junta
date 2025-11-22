@@ -59,6 +59,8 @@ app.post(
       if (!numeroIdentificacion) camposFaltantes.push("numeroIdentificacion");
       if (!actividadEconomica) camposFaltantes.push("actividadEconomica");
       if (!ingresosMensuales) camposFaltantes.push("ingresosMensuales");
+      if (!esPEP || esPEP === "") camposFaltantes.push("esPEP");
+      if (!manejaMonedaExtranjera || manejaMonedaExtranjera === "") camposFaltantes.push("manejaMonedaExtranjera");
 
       const documentosFaltantes = [];
       if (!req.files?.rut) documentosFaltantes.push("RUT");
@@ -98,16 +100,24 @@ app.post(
       // Prompt IA
       const prompt = `
 Eres un analista experto en onboarding bancario.
-Evalua coherencia entre lo declarado y lo detectado por OCR.
+Evalúa coherencia entre lo declarado en el formulario y lo detectado por OCR en los documentos.
 
-FORMULARIO:
+REGLAS IMPORTANTES:
+1. SOLO reporta inconsistencias cuando HAY CONTRADICCIÓN entre el documento OCR y lo declarado.
+2. NO reportes como inconsistencia: "el documento no menciona PEP" o "el documento no menciona moneda extranjera". Eso es NORMAL.
+3. Una inconsistencia real es cuando:
+   - El nombre en el documento NO coincide con el nombre declarado
+   - El ID en el documento NO coincide con el ID declarado
+   - La información en el documento contradice claramente lo declarado
+
+FORMULARIO DECLARADO:
 Nombre: ${nombreCompleto}
 Tipo ID: ${tipoIdentificacion}
 Numero ID: ${numeroIdentificacion}
-Actividad economica: ${actividadEconomica}
+Actividad económica: ${actividadEconomica}
 Ingresos declarados: ${ingresosMensuales}
-PEP: ${esPEP}
-Moneda extranjera: ${manejaMonedaExtranjera}
+¿Es PEP?: ${esPEP}
+¿Maneja moneda extranjera?: ${manejaMonedaExtranjera}
 
 DOCUMENTOS (OCR):
 
@@ -120,13 +130,13 @@ ${ocrCedula}
 --- EXTRACTOS ---
 ${ocrExtractos}
 
-Genera JSON con esta estructura:
+Responde SOLO con JSON en este formato:
 {
- "coherencia": "",
- "riesgo": "",
- "comentario": "",
- "inconsistenciasDetectadas": [],
- "recomendaciones": []
+ "coherencia": "Alta/Media/Baja",
+ "riesgo": "Bajo/Medio/Alto",
+ "comentario": "Análisis breve",
+ "inconsistenciasDetectadas": ["lista vacía si no hay contradicciones reales"],
+ "recomendaciones": ["acciones para el banco"]
 }
 `;
 
