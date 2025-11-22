@@ -27,8 +27,8 @@ function App() {
     if (!data.get("numeroIdentificacion")) errs.numeroIdentificacion = "Numero requerido.";
     if (!data.get("actividadEconomica")) errs.actividadEconomica = "Ingrese actividad.";
     if (!data.get("ingresosMensuales")) errs.ingresosMensuales = "Ingrese ingresos.";
-    if (!data.get("esPEP")) errs.esPEP = "Selecciona si eres PEP.";
-    if (!data.get("manejaMonedaExtranjera")) errs.manejaMonedaExtranjera = "Selecciona si manejas moneda extranjera.";
+    if (data.get("esPEP") === "" || data.get("esPEP") === null) errs.esPEP = "Selecciona si eres PEP.";
+    if (data.get("manejaMonedaExtranjera") === "" || data.get("manejaMonedaExtranjera") === null) errs.manejaMonedaExtranjera = "Selecciona si manejas moneda extranjera.";
     return errs;
   };
 
