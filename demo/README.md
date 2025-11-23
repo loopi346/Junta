@@ -1,12 +1,16 @@
-# Demo Validación Preventiva
+# Demo Validacion Preventiva
 
-PoC para validar preventivamente un onboarding bancario. Integra un backend Express que revisa completitud de documentos y consulta Gemini para un análisis preliminar, y un frontend React (Vite) que captura datos y muestra el resultado en tiempo real.
+PoC para validar preventivamente un onboarding bancario. Integra un backend Express que revisa completitud de documentos y consulta Gemini para un analisis preliminar, y un frontend React (Vite) que captura datos y muestra el resultado en tiempo real.
 
-## De qué trata el proyecto
-- Simular la recepción de datos + archivos (RUT, cédula, extractos) de un postulante.
-- Validar que la información esté completa antes de seguir un flujo bancario.
-- Pedir a Gemini un análisis resumido (riesgo preliminar, incoherencias y recomendación) para apoyar la decisión.
-- Mostrar en frontend el estado de validación y el detalle devuelto por el backend.
+## Demo en linea
+- Si no quieres levantarlo local, prueba en https://junta-2.onrender.com/.
+- El flujo es el mismo: completa el formulario, adjunta los archivos y revisa el resultado que retorna el backend.
+
+## De que trata el proyecto
+- Simular la recepcion de datos + archivos (RUT, cedula, extractos) de un postulante.
+- Validar que la informacion este completa antes de seguir un flujo bancario.
+- Pedir a Gemini un analisis resumido (riesgo preliminar, incoherencias y recomendacion) para apoyar la decision.
+- Mostrar en frontend el estado de validacion y el detalle devuelto por el backend.
 
 ## Requisitos
 - Node.js 18+
@@ -14,9 +18,9 @@ PoC para validar preventivamente un onboarding bancario. Integra un backend Expr
 
 ## Estructura
 - backend/: API Express con endpoint POST /validar
-- frontend/: app Vite/React que envía multipart/form-data al backend y muestra la respuesta
+- frontend/: app Vite/React que envia multipart/form-data al backend y muestra la respuesta
 
-## Puesta en marcha rápida
+## Puesta en marcha rapida
 ```bash
 # Backend
 cd demo/backend
@@ -37,9 +41,9 @@ PORT=3001
 ```
 
 ## Uso y flujo
-1) En el frontend, completa el formulario y adjunta RUT, cédula y extractos.
-2) Pulsa **Validar**. Se envía multipart/form-data a http://localhost:3001/validar.
-3) El backend revisa campos y archivos; si todo está presente, consulta Gemini y responde con algo similar a:
+1) En el frontend, completa el formulario y adjunta RUT, cedula y extractos.
+2) Pulsa **Validar**. Se envia multipart/form-data a http://localhost:3001/validar.
+3) El backend revisa campos y archivos; si todo esta presente, consulta Gemini y responde con algo similar a:
 ```json
 {
   "campos_faltantes": [],
@@ -48,9 +52,9 @@ PORT=3001
   "decision": "ContinuarFlujoTradicional"
 }
 ```
-4) El frontend muestra estado, faltantes (si hay) y el análisis de IA.
+4) El frontend muestra estado, faltantes (si hay) y el analisis de IA.
 
-## Scripts útiles
+## Scripts utiles
 - Backend: npm start
 - Frontend: npm run dev
 
