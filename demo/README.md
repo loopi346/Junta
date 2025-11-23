@@ -1,52 +1,45 @@
-## Demo Validacion Preventiva
+# Demo Validación Preventiva
 
-PoC sencilla para validar preventivamente un onboarding bancario. Incluye backend Express y frontend React con Vite.
+PoC para validar preventivamente un onboarding bancario. Integra un backend Express que revisa completitud de documentos y consulta Gemini para un análisis preliminar, y un frontend React (Vite) que captura datos y muestra el resultado en tiempo real.
 
-### Requisitos
+## De qué trata el proyecto
+- Simular la recepción de datos + archivos (RUT, cédula, extractos) de un postulante.
+- Validar que la información esté completa antes de seguir un flujo bancario.
+- Pedir a Gemini un análisis resumido (riesgo preliminar, incoherencias y recomendación) para apoyar la decisión.
+- Mostrar en frontend el estado de validación y el detalle devuelto por el backend.
 
+## Requisitos
 - Node.js 18+
 - npm
 
-### Instalacion
+## Estructura
+- backend/: API Express con endpoint POST /validar
+- frontend/: app Vite/React que envía multipart/form-data al backend y muestra la respuesta
 
+## Puesta en marcha rápida
 ```bash
+# Backend
 cd demo/backend
 npm install
+cp .env.example .env   # o crea .env (ver variables abajo)
+npm start              # expone http://localhost:3001
 
+# Frontend
 cd ../frontend
 npm install
+npm run dev            # por defecto http://localhost:5173
 ```
 
-### Configurar y ejecutar el backend
-
-1. Crear el archivo `.env` en `demo/backend`:
-   ```
-   GEMINI_API_KEY=TU_API_KEY_AQUI
-   PORT=3001
-   ```
-2. Ejecutar:
-   ```bash
-   cd demo/backend
-   npm start
-   ```
-
-El servidor queda en `http://localhost:3001` con el endpoint `POST /validar`.
-
-### Ejecutar el frontend
-
-```bash
-cd demo/frontend
-npm run dev
+## Variables de entorno (demo/backend/.env)
+```
+GEMINI_API_KEY=TU_API_KEY_AQUI
+PORT=3001
 ```
 
-Vite mostrara la URL (por defecto `http://localhost:5173`). El formulario envia los datos y archivos al backend en `http://localhost:3001/validar`.
-
-### Flujo
-
-1. Llenar el formulario y adjuntar RUT, cedula y extractos.
-2. Presionar **Validar** para enviar `multipart/form-data`.
-3. El backend valida completitud y, si todo esta completo, consulta Gemini para obtener el analisis:
-
+## Uso y flujo
+1) En el frontend, completa el formulario y adjunta RUT, cédula y extractos.
+2) Pulsa **Validar**. Se envía multipart/form-data a http://localhost:3001/validar.
+3) El backend revisa campos y archivos; si todo está presente, consulta Gemini y responde con algo similar a:
 ```json
 {
   "campos_faltantes": [],
@@ -55,5 +48,12 @@ Vite mostrara la URL (por defecto `http://localhost:5173`). El formulario envia 
   "decision": "ContinuarFlujoTradicional"
 }
 ```
+4) El frontend muestra estado, faltantes (si hay) y el análisis de IA.
 
-4. El frontend muestra la respuesta en pantalla (estado, mensaje, faltantes y analisis IA).
+## Scripts útiles
+- Backend: npm start
+- Frontend: npm run dev
+
+## Notas
+- Ejecuta backend y frontend en paralelo; el frontend espera el backend en http://localhost:3001/validar.
+- Usa tu clave de Gemini en GEMINI_API_KEY antes de probar.
